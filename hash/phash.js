@@ -15,7 +15,7 @@ const encrypt = {
     const token = jwt.sign({
       payload,
     },
-    process.env.JWT_KEY, { expiresIn: '3d' });
+    process.env.JWT_SECRET, { expiresIn: '3d' });
     return token;
   },
   verifyLoggedIn(req, res, next) {
@@ -25,14 +25,13 @@ const encrypt = {
         message: 'Access denied, you must be logged in to access this resource',
       });
     } else {
-      jwt.verify(token, process.env.JWT_KEY, (err, decodedToken) => {
+      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
         if (err) {
           res.status(401).json({
             errorMessage: 'Invalid token!',
           });
         } else {
           req.decodedToken = decodedToken;
-          console.log('decodedToken', req.decodedToken);
           next();
         }
       });

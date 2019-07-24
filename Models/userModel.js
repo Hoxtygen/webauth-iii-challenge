@@ -21,7 +21,7 @@ async function find() {
 
 async function restricted(req, res, next) {
   if (req.session && req.session.user) {
-    next()
+    next();
   } else {
     res.status(401).json({
       errorMessage: 'Uh!, you are joking right?, Get yourself some cookies and come back later',

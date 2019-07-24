@@ -6,7 +6,7 @@ const encrypt = require('../hash/phash.js');
 const router = express.Router();
 dotenv.config();
 
-router.get('/users', Users.restricted, async (req, res) => {
+router.get('/users', encrypt.verifyLoggedIn, async (req, res) => {
   try {
     const allUsers = await Users.find();
     return res.status(200).json(allUsers);
@@ -18,22 +18,33 @@ router.get('/users', Users.restricted, async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-  let { email, password } = req.body;
+  let { email, password, department } = req.body;
   password = encrypt.encryptPassword(password);
   const newUserData = {
     email,
     password,
+    department,
   };
   try {
     const [newUser] = await Users.addUser(newUserData);
     const user = await Users.findById(newUser);
     if (user) {
-      return res.status(201).json(user);
+      const tokenData = {
+        id: user.id,
+        department: user.department,
+        email: user.email,
+      };
+      const token = encrypt.createToken(tokenData);
+      return res.status(201).json({
+        token,
+        user,
+      });
     }
     return res.status(400).json({
       errorMessage: 'Bad request',
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({
       errorMessage: error,
     });
@@ -45,9 +56,15 @@ router.post('/login', async (req, res) => {
   try {
     const user = await Users.findByEmail(email);
     if (user && encrypt.comparePassword(password, user.password)) {
-      req.session.user = user;
+      const tokenData = {
+        id: user.id,
+        department: user.department,
+        email: user.email,
+      };
+      const token = encrypt.createToken(tokenData);
       return res.status(200).json({
         message: `Welcome  to your homepage ${user.email}`,
+        token,
         user,
       });
     }
@@ -55,6 +72,7 @@ router.post('/login', async (req, res) => {
       errorMessage: 'The user with that email does not exist',
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({
       errorMessage: error,
     });
