@@ -15,6 +15,10 @@ async function findByEmail(email) {
   return db('users').where({ email }).first();
 }
 
+async function findByDept(department) {
+  return db('users').where({ department });
+}
+
 async function find() {
   return db('users').select();
 }
@@ -32,6 +36,7 @@ async function restricted(req, res, next) {
 module.exports = {
   addUser,
   findByEmail,
+  findByDept,
   findById,
   find,
   restricted,
