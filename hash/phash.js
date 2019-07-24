@@ -1,4 +1,8 @@
+const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 const encrypt = {
   encryptPassword(pwd) {
@@ -6,6 +10,33 @@ const encrypt = {
   },
   comparePassword(encryptedPwd, pwd) {
     return bcrypt.compareSync(encryptedPwd, pwd);
+  },
+  createToken(payload) {
+    const token = jwt.sign({
+      payload,
+    },
+    process.env.JWT_KEY, { expiresIn: '3d' });
+    return token;
+  },
+  verifyLoggedIn(req, res, next) {
+    const token = req.headers.authorization;
+    if (!token) {
+      res.status(401).json({
+        message: 'Access denied, you must be logged in to access this resource',
+      });
+    } else {
+      jwt.verify(token, process.env.JWT_KEY, (err, decodedToken) => {
+        if (err) {
+          res.status(401).json({
+            errorMessage: 'Invalid token!',
+          });
+        } else {
+          req.decodedToken = decodedToken;
+          console.log('decodedToken', req.decodedToken);
+          next();
+        }
+      });
+    }
   },
 };
 

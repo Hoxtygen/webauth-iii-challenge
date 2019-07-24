@@ -1,8 +1,10 @@
 const express = require('express');
+const dotenv = require('dotenv');
 const Users = require('../Models/userModel.js');
 const encrypt = require('../hash/phash.js');
 
 const router = express.Router();
+dotenv.config();
 
 router.get('/users', Users.restricted, async (req, res) => {
   try {
