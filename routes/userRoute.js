@@ -7,9 +7,7 @@ const router = express.Router();
 dotenv.config();
 
 router.get('/users', encrypt.verifyLoggedIn, async (req, res) => {
-  
   const { department } = req.decodedToken.payload;
-  console.log(department);
   try {
     const allUsers = await Users.findByDept(department);
     return res.status(200).json(allUsers);
@@ -47,7 +45,6 @@ router.post('/register', async (req, res) => {
       errorMessage: 'Bad request',
     });
   } catch (error) {
-    console.log(error)
     return res.status(500).json({
       errorMessage: error,
     });
@@ -75,7 +72,6 @@ router.post('/login', async (req, res) => {
       errorMessage: 'The user with that email does not exist',
     });
   } catch (error) {
-    console.log(error)
     return res.status(500).json({
       errorMessage: error,
     });
